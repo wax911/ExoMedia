@@ -465,16 +465,15 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
     }
 
     fun prepare() {
-        if (prepared || mediaSource == null) {
+        if (prepared || mediaSource == null)
             return
-        }
 
         if (renderers.isNotEmpty()) {
             exoPlayer.stop()
         }
 
         stateStore.reset()
-        exoPlayer.prepare(mediaSource)
+        exoPlayer.prepare(mediaSource!!)
         prepared = true
 
         stopped.set(false)
