@@ -587,7 +587,7 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
         // TODO cache the total time at the start of each window (e.g. Map<WindowIndex, cumulativeStartTimeMs>)
         // Adds the preceding window durations
         val timeline = exoPlayer.currentTimeline
-        val maxWindowIndex = Math.min(timeline.windowCount - 1, exoPlayer.currentWindowIndex)
+        val maxWindowIndex = (timeline.windowCount - 1).coerceAtMost(exoPlayer.currentWindowIndex)
 
         var cumulativePositionMs: Long = 0
         val window = Timeline.Window()
