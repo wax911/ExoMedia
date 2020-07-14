@@ -127,7 +127,7 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
                         trackGroups.add(trackGroupArray.get(i))
                     }
                 }
-                if (!trackGroups.isEmpty()) {
+                if (trackGroups.isNotEmpty()) {
                     trackMap[type] = TrackGroupArray(*trackGroups.toTypedArray())
                 }
             }
