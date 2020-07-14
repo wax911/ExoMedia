@@ -81,7 +81,7 @@ class ExoMediaPlayer(private val context: Context) : Player.DefaultEventListener
     private var drmCallback: MediaDrmCallback? = null
     private var mediaSource: MediaSource? = null
     private val renderers: List<Renderer>
-    private val bandwidthMeter = DefaultBandwidthMeter()
+    private val bandwidthMeter = DefaultBandwidthMeter.Builder(context).build()
 
     private var captionListener: CaptionListener? = null
     private var metadataListener: MetadataListener? = null
