@@ -64,7 +64,7 @@ import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
-class ExoMediaPlayer(private val context: Context) : Player.DefaultEventListener() {
+class ExoMediaPlayer(private val context: Context) : Player.EventListener {
     val exoPlayer: ExoPlayer
     private val trackSelector: DefaultTrackSelector
     private val adaptiveTrackSelectionFactory: AdaptiveTrackSelection.Factory
@@ -81,7 +81,7 @@ class ExoMediaPlayer(private val context: Context) : Player.DefaultEventListener
     private var drmCallback: MediaDrmCallback? = null
     private var mediaSource: MediaSource? = null
     private val renderers: List<Renderer>
-    private val bandwidthMeter = DefaultBandwidthMeter()
+    private val bandwidthMeter = DefaultBandwidthMeter.Builder(context).build()
 
     private var captionListener: CaptionListener? = null
     private var metadataListener: MetadataListener? = null
@@ -127,7 +127,7 @@ class ExoMediaPlayer(private val context: Context) : Player.DefaultEventListener
                         trackGroups.add(trackGroupArray.get(i))
                     }
                 }
-                if (!trackGroups.isEmpty()) {
+                if (trackGroups.isNotEmpty()) {
                     trackMap[type] = TrackGroupArray(*trackGroups.toTypedArray())
                 }
             }
@@ -196,19 +196,31 @@ class ExoMediaPlayer(private val context: Context) : Player.DefaultEventListener
         mainHandler = Handler()
 
         val componentListener = ComponentListener()
-        val rendererProvider = RendererProvider(context, mainHandler, componentListener, componentListener, componentListener, componentListener)
+        val rendererProvider = RendererProvider(
+            context,
+            mainHandler,
+            componentListener,
+            componentListener,
+            componentListener,
+            componentListener
+        )
         val drmSessionManager = generateDrmSessionManager()
         rendererProvider.drmSessionManager = drmSessionManager
 
         renderers = rendererProvider.generate()
 
-        adaptiveTrackSelectionFactory = AdaptiveTrackSelection.Factory(bandwidthMeter)
-        trackSelector = DefaultTrackSelector(adaptiveTrackSelectionFactory)
+        adaptiveTrackSelectionFactory = AdaptiveTrackSelection.Factory()
+        trackSelector = DefaultTrackSelector(context, adaptiveTrackSelectionFactory)
 
         val loadControl = ExoMedia.Data.loadControl ?: DefaultLoadControl()
-        exoPlayer = ExoPlayerFactory.newInstance(context, renderers.toTypedArray(), trackSelector, loadControl)
+        exoPlayer = ExoPlayer.Builder(context, *renderers.toTypedArray())
+                .setTrackSelector(trackSelector)
+                .setLoadControl(loadControl)
+                .setBandwidthMeter(bandwidthMeter)
+                .build()
         exoPlayer.addListener(this)
-        analyticsCollector = AnalyticsCollector.Factory().createAnalyticsCollector(exoPlayer, Clock.DEFAULT)
+        analyticsCollector = AnalyticsCollector(Clock.DEFAULT)
+        analyticsCollector.setPlayer(exoPlayer)
         exoPlayer.addListener(analyticsCollector)
         setupDamSessionManagerAnalytics(drmSessionManager)
     }
@@ -217,9 +229,9 @@ class ExoMediaPlayer(private val context: Context) : Player.DefaultEventListener
         reportPlayerState()
     }
 
-    override fun onPlayerError(exception: ExoPlaybackException?) {
+    override fun onPlayerError(error: ExoPlaybackException) {
         listeners.forEach {
-            it.onError(this, exception)
+            it.onError(this, error)
         }
     }
 
@@ -458,16 +470,15 @@ class ExoMediaPlayer(private val context: Context) : Player.DefaultEventListener
     }
 
     fun prepare() {
-        if (prepared || mediaSource == null) {
+        if (prepared || mediaSource == null)
             return
-        }
 
         if (renderers.isNotEmpty()) {
             exoPlayer.stop()
         }
 
         stateStore.reset()
-        exoPlayer.prepare(mediaSource)
+        exoPlayer.prepare(mediaSource!!)
         prepared = true
 
         stopped.set(false)
@@ -556,8 +567,7 @@ class ExoMediaPlayer(private val context: Context) : Player.DefaultEventListener
     }
 
     fun setPlaybackSpeed(speed: Float): Boolean {
-        exoPlayer.playbackParameters = PlaybackParameters(speed, 1.0f)
-
+        exoPlayer.setPlaybackParameters(PlaybackParameters(speed, 1.0f))
         return true
     }
 
@@ -580,7 +590,7 @@ class ExoMediaPlayer(private val context: Context) : Player.DefaultEventListener
         // TODO cache the total time at the start of each window (e.g. Map<WindowIndex, cumulativeStartTimeMs>)
         // Adds the preceding window durations
         val timeline = exoPlayer.currentTimeline
-        val maxWindowIndex = Math.min(timeline.windowCount - 1, exoPlayer.currentWindowIndex)
+        val maxWindowIndex = (timeline.windowCount - 1).coerceAtMost(exoPlayer.currentWindowIndex)
 
         var cumulativePositionMs: Long = 0
         val window = Timeline.Window()
@@ -681,24 +691,20 @@ class ExoMediaPlayer(private val context: Context) : Player.DefaultEventListener
         return ExoPlayerRendererTracksInfo(exoPlayerRendererTrackIndexes, exoPlayerRendererTrackIndex, exoPlayerRendererTrackGroupIndex)
     }
 
+    /**
+     * @param rendererTrackIndexes The renderer track index related to the requested `groupIndex`
+     * @param rendererTrackIndex The corrected exoplayer group index which may be used to obtain proper track group from the renderer
+     * @param rendererTrackGroupIndex The corrected exoplayer group index which may be used to obtain proper track group from the renderer
+     */
     inner class ExoPlayerRendererTracksInfo(
-            rendererTrackIndexes: List<Int>,
-            /**
-             * The renderer track index related to the requested `groupIndex`
-             */
-            val rendererTrackIndex: Int,
-            /**
-             * The corrected exoplayer group index which may be used to obtain proper track group from the renderer
-             */
-            val rendererTrackGroupIndex: Int) {
+        rendererTrackIndexes: List<Int>,
+        val rendererTrackIndex: Int,
+        val rendererTrackGroupIndex: Int
+    ) {
         /**
          * The exo player renderer track indexes
          */
-        val rendererTrackIndexes: List<Int>
-
-        init {
-            this.rendererTrackIndexes = Collections.unmodifiableList(rendererTrackIndexes)
-        }
+        val rendererTrackIndexes: List<Int> = Collections.unmodifiableList(rendererTrackIndexes)
     }
 
     @JvmOverloads
