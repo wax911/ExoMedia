@@ -64,7 +64,7 @@ import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
-class ExoMediaPlayer(private val context: Context) : Player.DefaultEventListener() {
+class ExoMediaPlayer(private val context: Context) : Player.EventListener {
     val exoPlayer: ExoPlayer
     private val trackSelector: DefaultTrackSelector
     private val adaptiveTrackSelectionFactory: AdaptiveTrackSelection.Factory
