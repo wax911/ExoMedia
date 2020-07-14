@@ -209,7 +209,7 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
 
         renderers = rendererProvider.generate()
 
-        adaptiveTrackSelectionFactory = AdaptiveTrackSelection.Factory(bandwidthMeter)
+        adaptiveTrackSelectionFactory = AdaptiveTrackSelection.Factory()
         trackSelector = DefaultTrackSelector(adaptiveTrackSelectionFactory)
 
         val loadControl = ExoMedia.Data.loadControl ?: DefaultLoadControl()
