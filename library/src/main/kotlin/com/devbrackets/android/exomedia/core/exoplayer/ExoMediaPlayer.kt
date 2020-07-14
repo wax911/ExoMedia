@@ -688,24 +688,20 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
         return ExoPlayerRendererTracksInfo(exoPlayerRendererTrackIndexes, exoPlayerRendererTrackIndex, exoPlayerRendererTrackGroupIndex)
     }
 
+    /**
+     * @param rendererTrackIndexes The renderer track index related to the requested `groupIndex`
+     * @param rendererTrackIndex The corrected exoplayer group index which may be used to obtain proper track group from the renderer
+     * @param rendererTrackGroupIndex The corrected exoplayer group index which may be used to obtain proper track group from the renderer
+     */
     inner class ExoPlayerRendererTracksInfo(
-            rendererTrackIndexes: List<Int>,
-            /**
-             * The renderer track index related to the requested `groupIndex`
-             */
-            val rendererTrackIndex: Int,
-            /**
-             * The corrected exoplayer group index which may be used to obtain proper track group from the renderer
-             */
-            val rendererTrackGroupIndex: Int) {
+        rendererTrackIndexes: List<Int>,
+        val rendererTrackIndex: Int,
+        val rendererTrackGroupIndex: Int
+    ) {
         /**
          * The exo player renderer track indexes
          */
-        val rendererTrackIndexes: List<Int>
-
-        init {
-            this.rendererTrackIndexes = Collections.unmodifiableList(rendererTrackIndexes)
-        }
+        val rendererTrackIndexes: List<Int> = Collections.unmodifiableList(rendererTrackIndexes)
     }
 
     @JvmOverloads
