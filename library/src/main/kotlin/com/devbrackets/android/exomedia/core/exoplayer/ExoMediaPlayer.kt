@@ -229,9 +229,9 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
         reportPlayerState()
     }
 
-    override fun onPlayerError(exception: ExoPlaybackException?) {
+    override fun onPlayerError(error: ExoPlaybackException) {
         listeners.forEach {
-            it.onError(this, exception)
+            it.onError(this, error)
         }
     }
 
