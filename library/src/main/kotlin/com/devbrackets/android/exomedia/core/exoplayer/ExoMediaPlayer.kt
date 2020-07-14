@@ -213,7 +213,11 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
         trackSelector = DefaultTrackSelector(context, adaptiveTrackSelectionFactory)
 
         val loadControl = ExoMedia.Data.loadControl ?: DefaultLoadControl()
-        exoPlayer = ExoPlayerFactory.newInstance(context, renderers.toTypedArray(), trackSelector, loadControl)
+        exoPlayer = ExoPlayer.Builder(context, *renderers.toTypedArray())
+                .setTrackSelector(trackSelector)
+                .setLoadControl(loadControl)
+                .setBandwidthMeter(bandwidthMeter)
+                .build()
         exoPlayer.addListener(this)
         analyticsCollector = AnalyticsCollector.Factory().createAnalyticsCollector(exoPlayer, Clock.DEFAULT)
         exoPlayer.addListener(analyticsCollector)
