@@ -567,8 +567,7 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
     }
 
     fun setPlaybackSpeed(speed: Float): Boolean {
-        exoPlayer.playbackParameters = PlaybackParameters(speed, 1.0f)
-
+        exoPlayer.setPlaybackParameters(PlaybackParameters(speed, 1.0f))
         return true
     }
 
