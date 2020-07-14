@@ -196,7 +196,14 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
         mainHandler = Handler()
 
         val componentListener = ComponentListener()
-        val rendererProvider = RendererProvider(context, mainHandler, componentListener, componentListener, componentListener, componentListener)
+        val rendererProvider = RendererProvider(
+            context,
+            mainHandler,
+            componentListener,
+            componentListener,
+            componentListener,
+            componentListener
+        )
         val drmSessionManager = generateDrmSessionManager()
         rendererProvider.drmSessionManager = drmSessionManager
 
