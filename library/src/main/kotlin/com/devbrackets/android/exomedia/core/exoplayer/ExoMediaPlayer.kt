@@ -219,7 +219,8 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
                 .setBandwidthMeter(bandwidthMeter)
                 .build()
         exoPlayer.addListener(this)
-        analyticsCollector = AnalyticsCollector.Factory().createAnalyticsCollector(exoPlayer, Clock.DEFAULT)
+        analyticsCollector = AnalyticsCollector(Clock.DEFAULT)
+        analyticsCollector.setPlayer(exoPlayer)
         exoPlayer.addListener(analyticsCollector)
         setupDamSessionManagerAnalytics(drmSessionManager)
     }
