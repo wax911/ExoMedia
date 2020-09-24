@@ -63,7 +63,17 @@ open class RendererProvider(
 
     protected fun buildAudioRenderers(): List<Renderer> {
         val renderers = ArrayList<Renderer>()
-        renderers.add(MediaCodecAudioRenderer(context, MediaCodecSelector.DEFAULT, drmSessionManager, true, handler, audioRendererEventListener, AudioCapabilities.getCapabilities(context)))
+        renderers.add(
+            MediaCodecAudioRenderer(
+                context,
+                MediaCodecSelector.DEFAULT,
+                drmSessionManager,
+                true,
+                handler,
+                audioRendererEventListener,
+                AudioCapabilities.getCapabilities(context)
+            )
+        )
 
         // Adds any registered classes
         val classNames = ExoMedia.Data.registeredRendererClasses[ExoMedia.RendererType.AUDIO]
@@ -84,7 +94,18 @@ open class RendererProvider(
     protected fun buildVideoRenderers(): List<Renderer> {
         val renderers = ArrayList<Renderer>()
 
-        renderers.add(MediaCodecVideoRenderer(context, MediaCodecSelector.DEFAULT, videoJoiningTimeMs.toLong(), drmSessionManager, false, handler, videoRendererEventListener, droppedFrameNotificationAmount))
+        renderers.add(
+            MediaCodecVideoRenderer(
+                context,
+                MediaCodecSelector.DEFAULT,
+                videoJoiningTimeMs.toLong(),
+                drmSessionManager,
+                false,
+                handler,
+                videoRendererEventListener,
+                droppedFrameNotificationAmount
+            )
+        )
 
         // Adds any registered classes
         val classNames = ExoMedia.Data.registeredRendererClasses[ExoMedia.RendererType.VIDEO]

@@ -1091,9 +1091,9 @@ open class VideoView : RelativeLayout {
                 return
             }
 
-            obtainStyledAttributes(attributeSet, styles)?.let {
-                block(it)
-                it.recycle()
+            with (obtainStyledAttributes(attributeSet, styles)) {
+                block(this)
+                recycle()
             }
         }
     }

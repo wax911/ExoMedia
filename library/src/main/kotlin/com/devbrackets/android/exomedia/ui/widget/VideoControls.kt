@@ -65,8 +65,8 @@ abstract class VideoControls : RelativeLayout, VideoControlsCore {
     protected lateinit var controlsContainer: ViewGroup
     protected lateinit var textContainer: ViewGroup
 
-    protected lateinit var playDrawable: Drawable
-    protected lateinit var pauseDrawable: Drawable
+    protected var playDrawable: Drawable? = null
+    protected var pauseDrawable: Drawable? = null
 
     protected var visibilityHandler = Handler()
     protected var progressPollRepeater = Repeater()
