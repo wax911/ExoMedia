@@ -24,6 +24,9 @@ import androidx.annotation.*
 import androidx.core.graphics.drawable.DrawableCompat
 import androidx.appcompat.widget.AppCompatDrawableManager
 import android.util.TypedValue
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 
 /**
  * Retrieves the drawable specified with the `drawableRes` using the
@@ -34,9 +37,9 @@ import android.util.TypedValue
  * @param colorRes The resource id for the color to use for tinting
  * @return The tinted drawable
  */
-fun Context.tintCompat(@DrawableRes drawableRes: Int, @ColorRes colorRes: Int): Drawable {
-    val drawable = getDrawableCompat(drawableRes).mutate()
-    return tintCompat(drawable, colorRes)
+fun Context.tintCompat(@DrawableRes drawableRes: Int, @ColorRes colorRes: Int): Drawable? {
+    val drawable = getDrawableCompat(drawableRes)?.mutate()
+    return drawable?.let { tintCompat(it, colorRes) }
 }
 
 /**
@@ -63,9 +66,9 @@ fun Context.tintCompat(drawable: Drawable, @ColorRes colorRes: Int): Drawable =
  * @param tintListRes The resource id for the ColorStateList to use for tinting
  * @return The tinted drawable
  */
-fun Context.tintListCompat(@DrawableRes drawableRes: Int, @ColorRes tintListRes: Int): Drawable {
-    val drawable = getDrawableCompat(drawableRes).mutate()
-    return tintListCompat(drawable, tintListRes)
+fun Context.tintListCompat(@DrawableRes drawableRes: Int, @ColorRes tintListRes: Int): Drawable? {
+    val drawable = getDrawableCompat(drawableRes)?.mutate()
+    return drawable?.let { tintListCompat(it, tintListRes) }
 }
 
 /**
@@ -89,11 +92,11 @@ fun Context.tintListCompat(drawable: Drawable, @ColorRes tintListRes: Int): Draw
  * @param drawableResourceId The id for the drawable to retrieve
  * @return The drawable associated with `resourceId`
  */
-fun Context.getDrawableCompat(@DrawableRes drawableResourceId: Int): Drawable {
+fun Context.getDrawableCompat(@DrawableRes drawableResourceId: Int): Drawable? {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-        resources.getDrawable(drawableResourceId, theme)
+        ResourcesCompat.getDrawable(resources, drawableResourceId, theme)
     } else {
-        AppCompatDrawableManager.get().getDrawable(this, drawableResourceId)
+        ContextCompat.getDrawable(this, drawableResourceId)
     }
 }
 
@@ -125,7 +128,7 @@ fun Context.getResolvedResourceId(@AttrRes attr: Int): Int {
 fun Context.getColorCompat(@ColorRes colorRes: Int): Int {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         resources.getColor(colorRes, theme)
-    } else resources.getColor(colorRes)
+    } else ContextCompat.getColor(this, colorRes)
 }
 
 /**
@@ -138,5 +141,5 @@ fun Context.getColorCompat(@ColorRes colorRes: Int): Int {
 fun Context.getColorStateListCompat(@ColorRes colorRes: Int): ColorStateList {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         resources.getColorStateList(colorRes, theme)
-    } else resources.getColorStateList(colorRes)
+    } else AppCompatResources.getColorStateList(this, colorRes)
 }
