@@ -10,7 +10,6 @@ import com.google.android.exoplayer2.upstream.cache.CacheDataSource
 import com.google.android.exoplayer2.upstream.cache.CacheDataSourceFactory
 import com.google.android.exoplayer2.upstream.cache.LeastRecentlyUsedCacheEvictor
 import com.google.android.exoplayer2.upstream.cache.SimpleCache
-import com.squareup.leakcanary.LeakCanary
 import okhttp3.OkHttpClient
 import java.io.File
 
@@ -19,8 +18,6 @@ class App : Application() {
 
     override fun onCreate() {
         super.onCreate()
-
-        LeakCanary.install(this)
         configureExoMedia()
     }
 
