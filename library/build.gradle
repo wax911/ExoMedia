@@ -10,9 +10,9 @@ afterEvaluate {
  * bintray plugin to publish the artifact
  */
 class LibraryInfo {
-    static Integer versionMajor = 5
+    static Integer versionMajor = 6
     static Integer versionMinor = 0
-    static Integer versionPatch = 2
+    static Integer versionPatch = 0
 
     static String artifactId = 'exomedia'
     static String groupId = 'com.devbrackets.android'
