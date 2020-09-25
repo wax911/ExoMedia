@@ -46,7 +46,7 @@ open class RendererProvider(
         protected var audioRendererEventListener: AudioRendererEventListener,
         protected var videoRendererEventListener: VideoRendererEventListener) {
 
-    var drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>? = null
+    var drmSessionManager: DrmSessionManager? = null
     var droppedFrameNotificationAmount: Int = 50
     var videoJoiningTimeMs: Int = 5000
 
@@ -67,8 +67,6 @@ open class RendererProvider(
             MediaCodecAudioRenderer(
                 context,
                 MediaCodecSelector.DEFAULT,
-                drmSessionManager,
-                true,
                 handler,
                 audioRendererEventListener,
                 AudioCapabilities.getCapabilities(context)
@@ -99,7 +97,6 @@ open class RendererProvider(
                 context,
                 MediaCodecSelector.DEFAULT,
                 videoJoiningTimeMs.toLong(),
-                drmSessionManager,
                 false,
                 handler,
                 videoRendererEventListener,

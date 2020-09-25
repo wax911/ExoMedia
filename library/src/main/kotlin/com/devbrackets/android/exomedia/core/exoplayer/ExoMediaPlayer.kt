@@ -21,12 +21,10 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.PowerManager
 import androidx.annotation.FloatRange
 import androidx.annotation.Size
-import androidx.collection.ArrayMap
 import android.util.Log
 import android.view.Surface
 import com.devbrackets.android.exomedia.ExoMedia
@@ -222,7 +220,6 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
         analyticsCollector = AnalyticsCollector(Clock.DEFAULT)
         analyticsCollector.setPlayer(exoPlayer)
         exoPlayer.addListener(analyticsCollector)
-        setupDamSessionManagerAnalytics(drmSessionManager)
     }
 
     override fun onPlayerStateChanged(playWhenReady: Boolean, state: Int) {
@@ -254,7 +251,7 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
     fun setMediaSource(source: MediaSource?) {
         mediaSource?.let {
             it.removeEventListener(analyticsCollector)
-            analyticsCollector.resetForNewMediaSource()
+            analyticsCollector.resetForNewPlaylist()
         }
 
         source?.addEventListener(mainHandler, analyticsCollector)
@@ -778,30 +775,21 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
      *
      * @return The [DrmSessionManager] to use or `null`
      */
-    protected fun generateDrmSessionManager(): DrmSessionManager<FrameworkMediaCrypto>? {
+    protected fun generateDrmSessionManager(): DrmSessionManager? {
         // DRM is only supported on API 18 + in the ExoPlayer
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            return null
-        }
 
-        // Widevine will capture the majority of use cases however playready is supported on all AndroidTV devices
-        val uuid = C.WIDEVINE_UUID
-
-        try {
-            val sessionManager = DefaultDrmSessionManager(uuid, FrameworkMediaDrm.newInstance(uuid), DelegatedMediaDrmCallback(), null)
-            sessionManager.addListener(mainHandler, capabilitiesListener)
-
-            return sessionManager
+        return try {
+            // Widevine will capture the majority of use cases however playready is supported on all AndroidTV devices
+            DefaultDrmSessionManager.Builder()
+                .setUuidAndExoMediaDrmProvider(
+                    C.WIDEVINE_UUID,
+                    FrameworkMediaDrm.DEFAULT_PROVIDER
+                )
+                .setKeyRequestParameters(null)
+                .build(DelegatedMediaDrmCallback())
         } catch (e: Exception) {
             Log.d(TAG, "Unable to create a DrmSessionManager due to an exception", e)
-            return null
-        }
-
-    }
-
-    protected fun setupDamSessionManagerAnalytics(drmSessionManager: DrmSessionManager<FrameworkMediaCrypto>?) {
-        if (drmSessionManager is DefaultDrmSessionManager<*>) {
-            (drmSessionManager as DefaultDrmSessionManager<*>).addListener(mainHandler, analyticsCollector)
+            null
         }
     }
 
@@ -912,20 +900,27 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
         }
     }
 
-    private inner class CapabilitiesListener : DefaultDrmSessionEventListener {
-        override fun onDrmKeysLoaded() {
+    private inner class CapabilitiesListener : DrmSessionEventListener {
+        override fun onDrmKeysLoaded(windowIndex: Int, mediaPeriodId: MediaSource.MediaPeriodId?) {
             // Purposefully left blank
         }
 
-        override fun onDrmKeysRestored() {
+        override fun onDrmKeysRestored(
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId?
+        ) {
             // Purposefully left blank
         }
 
-        override fun onDrmKeysRemoved() {
+        override fun onDrmKeysRemoved(windowIndex: Int, mediaPeriodId: MediaSource.MediaPeriodId?) {
             // Purposefully left blank
         }
 
-        override fun onDrmSessionManagerError(e: Exception) {
+        override fun onDrmSessionManagerError(
+            windowIndex: Int,
+            mediaPeriodId: MediaSource.MediaPeriodId?,
+            e: Exception
+        ) {
             internalErrorListener?.onDrmSessionManagerError(e)
         }
     }
@@ -954,9 +949,8 @@ class ExoMediaPlayer(private val context: Context) : Player.EventListener {
             analyticsCollector.onAudioInputFormatChanged(format)
         }
 
-        override fun onAudioSinkUnderrun(bufferSize: Int, bufferSizeMs: Long, elapsedSinceLastFeedMs: Long) {
+        fun onAudioSinkUnderrun(bufferSize: Int, bufferSizeMs: Long, elapsedSinceLastFeedMs: Long) {
             internalErrorListener?.onAudioSinkUnderrun(bufferSize, bufferSizeMs, elapsedSinceLastFeedMs)
-            analyticsCollector.onAudioSinkUnderrun(bufferSize, bufferSizeMs, elapsedSinceLastFeedMs)
         }
 
         override fun onVideoEnabled(counters: DecoderCounters) {
