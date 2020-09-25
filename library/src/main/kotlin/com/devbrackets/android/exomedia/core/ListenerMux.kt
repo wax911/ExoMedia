@@ -18,6 +18,7 @@ package com.devbrackets.android.exomedia.core
 
 import android.media.MediaPlayer
 import android.os.Handler
+import android.os.Looper
 import androidx.annotation.IntRange
 import android.view.Surface
 import com.devbrackets.android.exomedia.core.exception.NativeMediaPlaybackException
@@ -63,7 +64,7 @@ class ListenerMux(private val muxNotifier: Notifier) :
         private const val COMPLETED_DURATION_LEEWAY: Long = 1000
     }
 
-    private val delayedHandler = Handler()
+    private val delayedHandler = Handler(Looper.getMainLooper())
 
     private var preparedListener: OnPreparedListener? = null
     private var completionListener: OnCompletionListener? = null
