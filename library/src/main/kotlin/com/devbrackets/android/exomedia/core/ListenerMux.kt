@@ -18,6 +18,7 @@ package com.devbrackets.android.exomedia.core
 
 import android.media.MediaPlayer
 import android.os.Handler
+import android.os.Looper
 import androidx.annotation.IntRange
 import android.view.Surface
 import com.devbrackets.android.exomedia.core.exception.NativeMediaPlaybackException
@@ -34,6 +35,8 @@ import com.google.android.exoplayer2.analytics.AnalyticsListener
 import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.decoder.DecoderCounters
 import com.google.android.exoplayer2.metadata.Metadata
+import com.google.android.exoplayer2.source.LoadEventInfo
+import com.google.android.exoplayer2.source.MediaLoadData
 import com.google.android.exoplayer2.source.MediaSourceEventListener
 import com.google.android.exoplayer2.source.TrackGroupArray
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray
@@ -61,7 +64,7 @@ class ListenerMux(private val muxNotifier: Notifier) :
         private const val COMPLETED_DURATION_LEEWAY: Long = 1000
     }
 
-    private val delayedHandler = Handler()
+    private val delayedHandler = Handler(Looper.getMainLooper())
 
     private var preparedListener: OnPreparedListener? = null
     private var completionListener: OnCompletionListener? = null
@@ -224,32 +227,32 @@ class ListenerMux(private val muxNotifier: Notifier) :
 
     override fun onLoadStarted(
         eventTime: AnalyticsListener.EventTime,
-        loadEventInfo: MediaSourceEventListener.LoadEventInfo,
-        mediaLoadData: MediaSourceEventListener.MediaLoadData
+        loadEventInfo: LoadEventInfo,
+        mediaLoadData: MediaLoadData
     ) {
         analyticsListener?.onLoadStarted(eventTime, loadEventInfo, mediaLoadData)
     }
 
     override fun onLoadCompleted(
         eventTime: AnalyticsListener.EventTime,
-        loadEventInfo: MediaSourceEventListener.LoadEventInfo,
-        mediaLoadData: MediaSourceEventListener.MediaLoadData
+        loadEventInfo: LoadEventInfo,
+        mediaLoadData: MediaLoadData
     ) {
         analyticsListener?.onLoadCompleted(eventTime, loadEventInfo, mediaLoadData)
     }
 
     override fun onLoadCanceled(
         eventTime: AnalyticsListener.EventTime,
-        loadEventInfo: MediaSourceEventListener.LoadEventInfo,
-        mediaLoadData: MediaSourceEventListener.MediaLoadData
+        loadEventInfo: LoadEventInfo,
+        mediaLoadData: MediaLoadData
     ) {
         analyticsListener?.onLoadCanceled(eventTime, loadEventInfo, mediaLoadData)
     }
 
     override fun onLoadError(
         eventTime: AnalyticsListener.EventTime,
-        loadEventInfo: MediaSourceEventListener.LoadEventInfo,
-        mediaLoadData: MediaSourceEventListener.MediaLoadData,
+        loadEventInfo: LoadEventInfo,
+        mediaLoadData: MediaLoadData,
         error: IOException,
         wasCanceled: Boolean
     ) {
@@ -258,28 +261,16 @@ class ListenerMux(private val muxNotifier: Notifier) :
 
     override fun onDownstreamFormatChanged(
         eventTime: AnalyticsListener.EventTime,
-        mediaLoadData: MediaSourceEventListener.MediaLoadData
+        mediaLoadData: MediaLoadData
     ) {
         analyticsListener?.onDownstreamFormatChanged(eventTime, mediaLoadData)
     }
 
     override fun onUpstreamDiscarded(
         eventTime: AnalyticsListener.EventTime,
-        mediaLoadData: MediaSourceEventListener.MediaLoadData
+        mediaLoadData: MediaLoadData
     ) {
         analyticsListener?.onUpstreamDiscarded(eventTime, mediaLoadData)
-    }
-
-    override fun onMediaPeriodCreated(eventTime: AnalyticsListener.EventTime) {
-        analyticsListener?.onMediaPeriodCreated(eventTime)
-    }
-
-    override fun onMediaPeriodReleased(eventTime: AnalyticsListener.EventTime) {
-        analyticsListener?.onMediaPeriodReleased(eventTime)
-    }
-
-    override fun onReadingStarted(eventTime: AnalyticsListener.EventTime) {
-        analyticsListener?.onReadingStarted(eventTime)
     }
 
     override fun onBandwidthEstimate(
